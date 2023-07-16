@@ -13,7 +13,7 @@
 #define L 7
 #define H 6
 
-#define ADDRESS "192.168.56.1"
+#define ADDRESS "127.0.0.1"
 #define PORT_NB "8080"
 
 #define TRUE 1
