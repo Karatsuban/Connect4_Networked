@@ -13,7 +13,6 @@
 #define L 7
 #define H 6
 
-#define ADDRESS "127.0.0.1"
 #define PORT_NB "8080"
 
 #define TRUE 1
@@ -92,20 +91,17 @@ int main(int argc, char* argv[]){
 
 	srand(time(NULL));
 
-	int isHost;
-	char str[15];
-	strcpy(str, "-h");
+	char* ADDRESS_DEF = "127.0.0.1";
 
-	if (argc == 2)
-	{
-		if (strcmp(argv[1], str) == 0)
+	int isHost = FALSE;
+	char str[15];
+	strcpy(str, "--host");
+
+	for (int i=1; i<argc; i++)
+		if (strcmp(argv[i], str) == 0)
 			isHost = TRUE;
 		else
-			isHost = FALSE;
-	}else
-	{
-		isHost = FALSE; // Default
-	}
+			ADDRESS_DEF = argv[i];
 
 
 	printf("You are %sthe host\n", isHost == TRUE ? "" : "NOT ");
@@ -115,10 +111,9 @@ int main(int argc, char* argv[]){
 	int status, sockfd;
 	struct addrinfo hints;
 	struct addrinfo *res;
-
+	int bytes_sent, bytes_rcvd;
 
 	// non-host stuff
-	int bytes_rcvd;
 	int rcvd_buf[50];
 	int rcvd_len = 50;
 
@@ -128,7 +123,6 @@ int main(int argc, char* argv[]){
 	socklen_t addr_size;
 	int accept_sockfd;
 	int sent_buf;
-	int bytes_sent;
 	int yes = 1;
 
 
@@ -138,7 +132,7 @@ int main(int argc, char* argv[]){
 	hints.ai_flags = AI_PASSIVE;     // fill in my IP for me
 
 
-	if ((status = getaddrinfo(ADDRESS, PORT_NB, &hints, &res)) != 0) {
+	if ((status = getaddrinfo(ADDRESS_DEF, PORT_NB, &hints, &res)) != 0) {
 		fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(status));
 		exit(1);
 	}
@@ -171,6 +165,8 @@ int main(int argc, char* argv[]){
 		}
 	}else
 	{
+		printf("Trying to connect to %s:%s\n", ADDRESS_DEF, PORT_NB);
+
 		// connect
 		if ( connect(sockfd, res->ai_addr, res->ai_addrlen) == -1)
 		{
@@ -178,12 +174,14 @@ int main(int argc, char* argv[]){
 			close(sockfd);
 			exit(1);
 		}
+
+		printf("You are connected!\n");
 	}
 
 	if (isHost)
 	{
 		// listen
-		printf("Waiting for the other player to connect !\n");
+		printf("Waiting for the other player to connect to %s:%s\n", ADDRESS_DEF, PORT_NB);
 
 		if ( listen(sockfd, 1) == -1)
 		{
@@ -191,6 +189,7 @@ int main(int argc, char* argv[]){
 			close(sockfd);
 			exit(1);
 		}
+
 
 		if (( accept_sockfd = accept(sockfd, (struct sockaddr*)&non_host_addr, &addr_size)) == -1)
 		{
@@ -200,6 +199,8 @@ int main(int argc, char* argv[]){
 		}
 		close(sockfd); // close the listening socket
 		sockfd = accept_sockfd; // rename the new socket for further uses
+
+		printf("You are connected!\n");
 	}
 
 
@@ -230,6 +231,7 @@ int main(int argc, char* argv[]){
 
 		playTurn = rand()%2; // chosing who begins
 		sent_buf = playTurn+MAGIC; // sending 1 byte (from int value, 'convert' to ascii value)
+		printf("Writing %i\n", sent_buf); // TODO remove this line
 		bytes_sent = send(sockfd, &sent_buf, 1, 0); // sending the id of the beginner
 		myTurn = SERVER_TURN; // only play when the turn is SERVER_TURN
 		otherTurn = CLIENT_TURN;
@@ -237,6 +239,10 @@ int main(int argc, char* argv[]){
 	else
 	{
 		bytes_rcvd = recv(sockfd, rcvd_buf, rcvd_len-1, 0);
+		printf("Bytes recv are :");
+		for (int i = 0; i<50; i++)
+			printf("%i ", rcvd_buf[i]);
+		printf("\n");
 		playTurn = rcvd_buf[0]-MAGIC; // get the beginner's turn nb (get ascii value, 'convert' to int)
 		myTurn = CLIENT_TURN; // only play when the turn is CLIENT_TURN
 		otherTurn = SERVER_TURN;
