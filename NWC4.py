@@ -1,7 +1,6 @@
 import socket
 import sys
 import random
-import argparse
 
 L = 7
 H = 6
