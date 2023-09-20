@@ -5,30 +5,18 @@ One-file server and client to play Connect 4 over the network
 
 Each source file in this repository contains the code for a server and a client to play the game of Connect4 over the network. Each player can use a different version of the server/client as they are compatible.
 
-## Setup
-
-For the time being, games can only be hosted at the address 127.0.0.1, at the port 8080.
-You should make sure this port is not already in use before playing.
-
-### Setup for the C file
-
-This file is to be compiled under Linux with the command :   
-> $ gcc NWC4.c
-
-### Setup for the Python file
-
-No particular setup is needed. Just make sure you have Python3.X installed on your system.
-
-
 ## Use
 
-One player is the host, the other is the client. The host must execute their file with the parameter '-h' (for host).   
-The other just has to execute their file with no argument at all.
+One player is the host, the other is the client.  
+Games can be hosted at any ip adress available (only tested on private IPV4 addresses), but the port number used is 8080  
+You should make sure this port is not already in use before playing.  
+You can launch you file with the following (optionnal) arguments (in any order) :    
+- --host : specify you will be the host
+- X.Y.Z.A : any IPV4 address  
+
+Make sure the two players use the same adress and that only one of them is the host!
 
 
 ## Updates to come
 
-+ Being able to chose an address and a port number via command line parameters
-+ Foolproof every function that needs it
-+ Add a server/client in Java
-+ Prettify the output
++ Use any size of 'board' to play on
