@@ -1,12 +1,12 @@
 import socket
 import sys
 import random
-
+import argparse
 
 L = 7
 H = 6
 
-ADDRESS = "127.0.0.1"
+ADDRESS_DEF = "127.0.0.1"
 PORT_NB = 8080
 
 SERVER_TURN = 0
@@ -72,47 +72,47 @@ def updateTurnCount(val):
 
 
 def main(argc, argv):
-	global L, H, damier
+	global L, H, damier, ADDRESS_DEF, PORT_NB
 
-	isHost = None;
+	isHost = False;
 
-	if argc == 2:
-		if argv[1] == '-h':
+	for arg in argv[1:]:
+		if arg == "--host":
 			isHost = True
 		else:
-			isHost = False
-
-
-	print("You are {}the host".format("" if isHost else "NOT "))
-
+			ADDRESS_DEF = arg
 
 	mySocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	mySocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
+	print("You are {}the host".format("" if isHost else "NOT "))
+
+
 	if isHost:
 
 		try:
-			mySocket.bind((ADDRESS, PORT_NB))
+			mySocket.bind((ADDRESS_DEF, PORT_NB))
 		except socket.error:
 			print("Error on bind: make sure there is not already an host!")
 			sys.exit()
 
-	else:
-
-		try:
-			mySocket.connect((ADDRESS, PORT_NB))
-		except socket.error:
-			print("Error on connect: make sure the host is up!")
-			sys.exit(1)
-
-
-	if isHost:
-		print("Waiting for the other player to connect!")
+		print("Waiting for the other player to connect to {}:{}!".format(ADDRESS_NB, PORT_NB))
 		mySocket.listen(1)
 		connection, address = mySocket.accept()
 		mySocket = connection # rename the new socket for further uses
 		# TODO : add a try in case the user ctl-c at this time
 
+	else:
+
+		print("Trying to connect to {}:{}".format(ADDRESS_DEF, PORT_NB))
+
+		try:
+			mySocket.connect((ADDRESS_DEF, PORT_NB))
+		except socket.error:
+			print("Error on connect: make sure the host is up!")
+			sys.exit(1)
+
+		print("You are connected!")
 
 
 	cells_left = L*H
@@ -133,10 +133,7 @@ def main(argc, argv):
 		myTurn = SERVER_TURN # only play when the turn is SERVER_TURN
 		otherTurn = CLIENT_TURN
 	else:
-		val = mySocket.recv(1).decode("Utf8") # receive 1 byte i.e. the beginner's turn nb
-		print("HERE ! val=", val)
-		playTurn = int(val)
-		#playTurn = int(mySocket.recv(1).decode("Utf8")) # receive 1 byte i.e. the beginner's turn nb
+		playTurn = int(mySocket.recv(1).decode("Utf8")) # receive 1 byte i.e. the beginner's turn nb
 		myTurn = CLIENT_TURN # only play when the turn is CLIENT_TURN
 		otherTurn = SERVER_TURN
 
@@ -181,10 +178,7 @@ def main(argc, argv):
 			playTurn = updateTurnCount(playTurn)
 
 		else:
-
-			val = mySocket.recv(1).decode("Utf8") # wait for a column nb
-
-			x_choice = int(val) #int(mySocket.recv(1).decode("Utf8")) # wait for a column nb
+			x_choice = int(mySocket.recv(1).decode("Utf8")) # wait for a column nb
 			y_choice = can_play(x_choice)
 
 			damier[x_choice][y_choice] = icons[otherTurn] # update the grid
