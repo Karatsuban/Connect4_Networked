@@ -231,7 +231,6 @@ int main(int argc, char* argv[]){
 
 		playTurn = rand()%2; // chosing who begins
 		sent_buf = playTurn+MAGIC; // sending 1 byte (from int value, 'convert' to ascii value)
-		printf("Writing %i\n", sent_buf); // TODO remove this line
 		bytes_sent = send(sockfd, &sent_buf, 1, 0); // sending the id of the beginner
 		myTurn = SERVER_TURN; // only play when the turn is SERVER_TURN
 		otherTurn = CLIENT_TURN;
@@ -239,10 +238,6 @@ int main(int argc, char* argv[]){
 	else
 	{
 		bytes_rcvd = recv(sockfd, rcvd_buf, rcvd_len-1, 0);
-		printf("Bytes recv are :");
-		for (int i = 0; i<50; i++)
-			printf("%i ", rcvd_buf[i]);
-		printf("\n");
 		playTurn = rcvd_buf[0]-MAGIC; // get the beginner's turn nb (get ascii value, 'convert' to int)
 		myTurn = CLIENT_TURN; // only play when the turn is CLIENT_TURN
 		otherTurn = SERVER_TURN;
@@ -327,5 +322,3 @@ int main(int argc, char* argv[]){
 
 	return 0;
 }
-
-
